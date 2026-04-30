@@ -67,6 +67,8 @@ class QuestionDetector:
                 pass  # never let detection errors crash the loop
 
     async def _check_for_question(self) -> None:
+        if self._llm is None:
+            return
         new_segments = self._buffer.get_since(self._last_checked_ts)
         if not new_segments:
             return
@@ -93,6 +95,8 @@ class QuestionDetector:
         if not segments:
             return "No recent audio", "There is no transcript to analyze yet."
 
+        if self._llm is None:
+            return "No LLM configured", "Please configure an LLM provider in Settings."
         chunk_text = self._buffer.to_text(segments)
         raw = await self._llm.chat(DETECT_PROMPT, chunk_text)
         result = _parse_detect(raw)

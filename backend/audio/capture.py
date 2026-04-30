@@ -7,7 +7,6 @@ import sys
 from typing import Awaitable, Callable, List, Optional
 
 import numpy as np
-import sounddevice as sd
 
 from config import AppConfig, AudioSourceType
 
@@ -27,7 +26,7 @@ class AudioCaptureManager:
         self._audio_callback = audio_callback
         self._loop = loop
         self._running = False
-        self._mic_stream: Optional[sd.InputStream] = None
+        self._mic_stream = None
         self._loopback_capture = None
 
     # ------------------------------------------------------------------
@@ -35,6 +34,7 @@ class AudioCaptureManager:
     # ------------------------------------------------------------------
 
     def list_input_devices(self) -> List[dict]:
+        import sounddevice as sd
         devices = []
         try:
             all_devs = sd.query_devices()
@@ -76,6 +76,8 @@ class AudioCaptureManager:
             self._start_loopback()
 
     def _start_mic(self) -> None:
+        import sounddevice as sd
+
         def _sd_callback(indata: np.ndarray, frames, time_info, status):
             audio = indata[:, 0].copy()
             pcm = (audio * 32767).astype(np.int16).tobytes()
@@ -95,6 +97,7 @@ class AudioCaptureManager:
 
     def _start_loopback(self) -> None:
         if platform.system() == "Darwin":
+            import sounddevice as sd
             # BlackHole appears as a regular input device on macOS
             def _sd_loopback_callback(indata: np.ndarray, frames, time_info, status):
                 audio = indata[:, 0].copy()

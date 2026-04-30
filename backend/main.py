@@ -13,7 +13,6 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from audio.capture import AudioCaptureManager
 from config import AppConfig, AppMode, LLMProviderType, STTProviderType, load_config, save_config
 from llm.base import LLMProvider
 from question_detector import QuestionDetector
@@ -29,7 +28,7 @@ class _State:
     stt: Optional[STTProvider] = None
     llm: Optional[LLMProvider] = None
     buffer: TranscriptBuffer = TranscriptBuffer()
-    capture: Optional[AudioCaptureManager] = None
+    capture = None  # AudioCaptureManager, imported lazily
     detector: Optional[QuestionDetector] = None
     is_capturing: bool = False
     ws_clients: Set[WebSocket] = set()
@@ -147,15 +146,26 @@ async def _on_answer(question: str, answer: str) -> None:
 
 async def _reload_providers(config: AppConfig) -> None:
     """Tear down and rebuild STT/LLM providers from the new config."""
+    import logging
+    log = logging.getLogger("mk-qna")
+
     if state.stt:
         await state.stt.shutdown()
     state.stt = _build_stt(config)
-    await state.stt.initialize()
+    try:
+        await state.stt.initialize()
+    except Exception as e:
+        log.warning(f"STT init failed: {e}")
+        state.stt = None
 
     if state.llm:
         await state.llm.shutdown()
     state.llm = _build_llm(config)
-    await state.llm.initialize()
+    try:
+        await state.llm.initialize()
+    except Exception as e:
+        log.warning(f"LLM init failed: {e}")
+        state.llm = None
 
     # Rebuild detector with new LLM
     if state.detector:
@@ -172,12 +182,22 @@ async def _reload_providers(config: AppConfig) -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import logging
+    log = logging.getLogger("mk-qna")
     state.config = load_config()
     state.buffer = TranscriptBuffer(state.config.transcript_buffer_minutes * 60)
     state.stt = _build_stt(state.config)
     state.llm = _build_llm(state.config)
-    await state.stt.initialize()
-    await state.llm.initialize()
+    try:
+        await state.stt.initialize()
+    except Exception as e:
+        log.warning(f"STT init failed (provider will be unavailable): {e}")
+        state.stt = None
+    try:
+        await state.llm.initialize()
+    except Exception as e:
+        log.warning(f"LLM init failed (provider will be unavailable): {e}")
+        state.llm = None
     state.detector = QuestionDetector(state.llm, state.buffer, state.config, _on_answer)
     yield
     # Shutdown
@@ -235,6 +255,7 @@ async def post_config(new_config: AppConfig):
 
 @app.get("/api/devices")
 async def get_devices():
+    from audio.capture import AudioCaptureManager
     loop = asyncio.get_event_loop()
     temp_manager = AudioCaptureManager(state.config, _on_audio_chunk, loop)
     return temp_manager.list_input_devices()
@@ -258,6 +279,7 @@ async def start_capture():
     if state.is_capturing:
         return {"status": "already running"}
 
+    from audio.capture import AudioCaptureManager
     loop = asyncio.get_event_loop()
     state.capture = AudioCaptureManager(state.config, _on_audio_chunk, loop)
     await state.capture.start()
