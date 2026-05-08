@@ -103,7 +103,8 @@ function createOverlayWindow() {
     minHeight: 200,
     alwaysOnTop: true,
     frame: false,
-    transparent: true,
+    transparent: process.platform !== 'linux',
+    backgroundColor: process.platform === 'linux' ? '#0f0f14' : undefined,
     resizable: true,
     skipTaskbar: false,
     webPreferences: {
