@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>MK Live Q&A</title>
+  <link rel="stylesheet" href="overlay.css" />
+</head>
+<body>
+
+  <!-- Title bar (drag handle) -->
+  <div id="titlebar">
+    <div class="left">
+      <div id="status-dot"></div>
+      <span id="app-title">MK Live Q&amp;A</span>
+    </div>
+    <div class="right">
+      <!-- Mode toggle: left=Manual, right=Auto -->
+      <div class="mode-toggle">
+        <span id="mode-label-manual">Manual</span>
+        <label class="toggle-switch" title="Switch mode">
+          <input type="checkbox" id="mode-toggle" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span id="mode-label-auto">Auto</span>
+      </div>
+      <!-- Settings button -->
+      <button class="icon-btn" id="settings-btn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Answers panel -->
+  <div id="answer-panel">
+    <div class="empty-state" id="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <span>Answers will appear here</span>
+    </div>
+  </div>
+
+  <!-- Bottom toolbar -->
+  <div id="toolbar">
+    <button id="capture-btn">Start</button>
+    <button id="trigger-btn">Get Answer</button>
+    <button id="clear-btn">Clear</button>
+  </div>
+
+  <script src="overlay.js"></script>
+</body>
+</html>
